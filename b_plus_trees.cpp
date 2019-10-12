@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include <fstream>
+#include <sstream>
 using namespace std;
 
 struct node
@@ -177,12 +178,9 @@ public:
     void find(long int id)
     {
         bool flag = true;
-        bool display = true;
         if (this->root == NULL)
         {
             flag = false;
-            display = false;
-            cout << "Tree is empty" << endl;
         }
         else
         {
@@ -198,30 +196,26 @@ public:
             flag = binary_search(ptr->id.begin(), ptr->id.end(), id);
         }
 
-        if (display)
+        if (flag)
         {
-            if (flag)
-            {
-                cout << "YES" << endl;
-            }
-            else
-            {
-                cout << "NO" << endl;
-            }
+            cout << "YES" << endl;
+        }
+        else
+        {
+            cout << "NO" << endl;
         }
     }
 
     // Count Operation
     void id_count(long int id)
     {
+        long int counter = 0;
         if (this->root == NULL)
         {
-            cout << "Tree is empty" << endl;
-            return;
+            ;
         }
         else
         {
-            long int counter = 0;
             node *ptr = root;
             vector<long int>::iterator upper;
             int pos = 0;
@@ -236,18 +230,17 @@ public:
                 ptr = ptr->child[pos];
             }
             counter += count(ptr->id.begin(), ptr->id.end(), id);
-
-            cout << counter << endl;
         }
+        cout << counter << endl;
     }
 
     // Range Operation
     void range(long int x, long int y)
     {
+        long int count = 0;
         if (this->root == NULL)
         {
-            cout << "Tree is empty" << endl;
-            return;
+            ;
         }
         else
         {
@@ -256,7 +249,6 @@ public:
                 cout << "x < y is required" << endl;
             }
 
-            long int count = 0;
             node *ptr1 = root;
             node *ptr2 = root;
             vector<long int>::iterator upper;
@@ -344,8 +336,8 @@ public:
                     ++count;
                 }
             }
-            cout << count << endl;
         }
+        cout << count << endl;
     }
 
     // Print Leaf Nodes
@@ -411,10 +403,12 @@ int main(int argc, char const *argv[])
     char query[7];
     long int x = 0;
     long int y = 0;
+    string line;
 
-    while (true)
+    while (getline(input, line))
     {
-        input >> query;
+        istringstream inp(line);
+        inp >> query;
 
         if (strcmp(query, "QUIT") == 0)
         {
@@ -422,23 +416,23 @@ int main(int argc, char const *argv[])
         }
         else if (strcmp(query, "INSERT") == 0)
         {
-            input >> x;
+            inp >> x;
             tree.insert(x);
         }
         else if (strcmp(query, "FIND") == 0)
         {
-            input >> x;
+            inp >> x;
             tree.find(x);
         }
         else if (strcmp(query, "COUNT") == 0)
         {
-            input >> x;
+            inp >> x;
             tree.id_count(x);
         }
         else if (strcmp(query, "RANGE") == 0)
         {
-            input >> x;
-            input >> y;
+            inp >> x;
+            inp >> y;
             tree.range(x, y);
         }
         else
