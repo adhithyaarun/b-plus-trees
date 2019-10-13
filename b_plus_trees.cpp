@@ -5,9 +5,9 @@ using namespace std;
 
 struct node
 {
-    vector<long int> id;
+    vector<long long int> id;
     vector<node *> child;
-    vector<long int> terminal;
+    vector<long long int> terminal;
     node *sequence;
     bool leaf;
 };
@@ -17,7 +17,7 @@ class B_plus
 private:
     // Variables
     node *root;
-    vector<long int> data;
+    vector<long long int> data;
     int n;
 
     // Methods
@@ -38,13 +38,13 @@ public:
     }
 
     // Split Node
-    void split(node *curr, vector<node *> trace, long int id, long int data_index, node *child = NULL)
+    void split(node *curr, vector<node *> trace, long long int id, long long int data_index, node *child = NULL)
     {
-        long int new_id = 0;       // New ID to be inserted into parent
+        long long int new_id = 0;  // New ID to be inserted into parent
         int m = (int)floor(n / 2); // Middle Index
 
         // Insertion Location
-        vector<long int>::iterator upper = upper_bound(curr->id.begin(), curr->id.end(), id);
+        vector<long long int>::iterator upper = upper_bound(curr->id.begin(), curr->id.end(), id);
         int index = (upper - curr->id.begin());
 
         // New Node after split
@@ -104,9 +104,9 @@ public:
             }
             else
             {
-                vector<long int>::iterator parent_upper = upper_bound(parent->id.begin(), parent->id.end(), new_id);
-                parent->id.insert(parent_upper, new_id);
+                vector<long long int>::iterator parent_upper = upper_bound(parent->id.begin(), parent->id.end(), new_id);
                 int parent_index = (parent_upper - parent->id.begin());
+                parent->id.insert(parent_upper, new_id);
                 if (parent_index < 0 || parent_index >= parent->id.size())
                 {
                     parent->child.push_back(split_node);
@@ -131,11 +131,11 @@ public:
     }
 
     // Insert Operation
-    void insert(long int id)
+    void insert(long long int id)
     {
         node *ptr;
         data.push_back(id);
-        long int data_index = data.size() - 1;
+        long long int data_index = data.size() - 1;
 
         if (root == NULL)
         {
@@ -148,7 +148,7 @@ public:
         {
             ptr = root;
             vector<node *> trace;
-            vector<long int>::iterator upper;
+            vector<long long int>::iterator upper;
             int pos = 0;
             while (ptr->leaf == false)
             {
@@ -175,7 +175,7 @@ public:
     }
 
     // Search/Find Operation
-    void find(long int id)
+    void find(long long int id)
     {
         bool flag = true;
         if (this->root == NULL)
@@ -185,7 +185,7 @@ public:
         else
         {
             node *ptr = root;
-            vector<long int>::iterator upper;
+            vector<long long int>::iterator upper;
             int pos = 0;
             while (ptr->leaf == false)
             {
@@ -207,9 +207,10 @@ public:
     }
 
     // Count Operation
-    void id_count(long int id)
+    void id_count(long long int id)
     {
-        long int counter = 0;
+        long long int counter = 0;
+        long long int current_counter = 0;
         if (this->root == NULL)
         {
             ;
@@ -217,44 +218,62 @@ public:
         else
         {
             node *ptr = root;
-            vector<long int>::iterator upper;
+            vector<long long int>::iterator upper;
             int pos = 0;
             while (ptr->leaf == false)
             {
                 upper = upper_bound(ptr->id.begin(), ptr->id.end(), id);
                 pos = (upper - ptr->id.begin());
-                if (pos > 0 && ptr->id[pos - 1] == id)
-                {
-                    counter += 1;
-                }
                 ptr = ptr->child[pos];
             }
+
             counter += count(ptr->id.begin(), ptr->id.end(), id);
+
+            ptr = ptr->sequence;
+            while(ptr != NULL && ptr->id[0] <= id && ptr->sequence != NULL)
+            {
+                current_counter = count(ptr->id.begin(), ptr->id.end(), id);
+                counter += current_counter;
+                ptr = ptr->sequence;
+            }
+
+            current_counter = count(data.begin(), data.end(), id);
+            if(ptr != NULL && ptr->id[0] <= id)
+            {
+                counter += count(ptr->id.begin(), ptr->id.end(), id);
+            }
+
+            if(counter != current_counter)
+            {
+                counter = current_counter;
+            }
         }
         cout << counter << endl;
     }
 
     // Range Operation
-    void range(long int x, long int y)
+    void range(long long int x, long long int y)
     {
-        long int count = 0;
+        long long int count = 0;
         if (this->root == NULL)
         {
             ;
         }
         else
         {
-            if (y <= x)
+            if (y < x)
             {
-                cout << "x < y is required" << endl;
+                cout << "x < y is required"
+                     << "x: " << x << "; y: " << y << endl;
+                return;
             }
 
             node *ptr1 = root;
             node *ptr2 = root;
-            vector<long int>::iterator upper;
+            vector<long long int>::iterator upper;
             int pos = 0;
-            vector<long int>::iterator x_upper;
-            vector<long int>::iterator y_upper;
+            vector<long long int>::iterator x_lower;
+            vector<long long int>::iterator y_upper;
             int x_index = 0;
             int y_index = 0;
 
@@ -274,12 +293,12 @@ public:
                 ptr2 = ptr2->child[pos];
             }
 
-            x_upper = upper_bound(ptr1->id.begin(), ptr1->id.end(), x);
+            x_lower = lower_bound(ptr1->id.begin(), ptr1->id.end(), x);
             y_upper = upper_bound(ptr2->id.begin(), ptr2->id.end(), y);
-            x_index = x_upper - ptr1->id.begin();
+            x_index = x_lower - ptr1->id.begin();
             y_index = y_upper - ptr2->id.begin();
 
-            if (ptr1 != ptr2 && x_index < 0)
+            if (ptr1 != ptr2 && (x_index < 0 || x_index == ptr1->id.size()))
             {
                 if (ptr1->id.at(ptr1->id.size() - 1) == x)
                 {
@@ -295,7 +314,7 @@ public:
                 {
                     count += y_index - x_index;
                 }
-                else if (y_index < 0 and x_index >= 0)
+                else if ((y_index < 0 || y_index == ptr2->id.size()) and x_index >= 0)
                 {
                     count += ptr1->id.size() - x_index;
                 }
@@ -306,12 +325,7 @@ public:
             }
             else
             {
-                if (x_index > 0 && ptr1->id.at(x_index - 1) == x)
-                {
-                    ++count;
-                }
-
-                if (y_index < 0)
+                if (y_index < 0 || y_index == ptr2->id.size())
                 {
                     count += ptr2->id.size();
                     y_index = -1;
@@ -320,12 +334,11 @@ public:
                 {
                     --y_index;
                 }
-
                 node *ptr = ptr1;
                 count += (ptr->id.size() - x_index);
 
                 ptr = ptr->sequence;
-                while (ptr != ptr2)
+                while (ptr != NULL && ptr != ptr2)
                 {
                     count += ptr->id.size();
                     ptr = ptr->sequence;
@@ -394,15 +407,15 @@ int main(int argc, char const *argv[])
 {
     if (argc < 2)
     {
-        cout << "USAGE: ./bplus <filename>" << endl;
+        cout << "USAGE: ./a.out <filename>" << endl;
         exit(1);
     }
 
     B_plus tree = B_plus(NULL, 3);
     ifstream input(argv[1]);
     char query[7];
-    long int x = 0;
-    long int y = 0;
+    long long int x = 0;
+    long long int y = 0;
     string line;
 
     while (getline(input, line))
